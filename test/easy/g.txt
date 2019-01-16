@@ -1,0 +1,16 @@
+// Grammar
+
+Polynome:
+  Monomial *{ [+-] Monomial+In @Monomial } // This is comment
+
+// Grammar of Polynome
+
+Monomial:
+  Number *{ [*/] Number }
+
+  [+In] \( Polynome \)
+
+  [-In] [+-] !~ Monomial
+
+Number:
+  \d+

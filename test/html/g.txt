@@ -1,0 +1,12 @@
+Html: *Node
+Node: Element | Text
+Element: Head *Node ?Tail
+Head: < <Tag ?Attributes  >
+Tag: \w+
+Attributes: *Attribute
+Attribute: \s+ AttrKey ?AttrInit
+AttrKey: [^=>\s]+
+AttrInit: = ?AttrExpr
+AttrExpr: " [^"]* @AttrValue " | ' [^']* @AttrValue ' | [^>\s]* @AttrValue
+Tail: \</ >Tag >
+Text: (?:[^<]|<[^\w/])+

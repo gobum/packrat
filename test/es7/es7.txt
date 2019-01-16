@@ -1,0 +1,497 @@
+Script:
+  ?ScriptBody
+ScriptBody:
+  StatementList
+Module:
+  *ModuleItem
+ModuleItem:
+  ImportDeclaration
+  ExportDeclaration
+  StatementListItem
+ImportDeclaration:
+  `import` {
+    ImportClause FromClause
+    ModuleSpecifier
+   } ;
+ImportClause:
+  ImportedDefaultBinding ?{ , { NameSpaceImport | NamedImports } }
+  NameSpaceImport | NamedImports
+ImportedDefaultBinding:
+  ImportedBinding
+NameSpaceImport:
+  \* `as` ImportedBinding
+NamedImports:
+  \{ ?{ ImportsList ?, } \}
+FromClause:
+  `from` ModuleSpecifier
+ImportsList:
+  ImportSpecifier *{ , ImportSpecifier }
+ImportSpecifier:
+  ImportedBinding
+  IdentifierName `as` ImportedBinding
+ModuleSpecifier:
+  StringLiteral
+ImportedBinding:
+  BindingIdentifier
+ExportDeclaration:
+  `export` {
+    { \* FromClause | ExportClause+Local | ExportClause FromClause } ;
+    VariableStatement
+    Declaration
+    `default` {
+      HoistableDeclaration+Default
+      ClassDeclaration+Default
+      !{ `function` | `async` ~ `function` | `class` } AssignmentExpression+In ;
+    }
+  }
+ExportClause:
+  \{ ?{ ExportsList?Local ?, } \}
+ExportsList:
+  ExportSpecifier?Local *{ , ExportSpecifier?Local }
+ExportSpecifier:
+  [?Local] IdentifierReference ?{ `as` IdentifierName }
+  [-Local] IdentifierName ?{ `as` IdentifierName }
+
+FunctionDeclaration:
+  `function` BindingIdentifier?Yield?Await \( ?FormalParameters \) \{ FunctionBody \}
+  [?Default] `function` \( FormalParameters \) \{ FunctionBody \}
+FunctionExpression:
+  `function` ?BindingIdentifier \( ?FormalParameters \) \{ FunctionBody \}
+UniqueFormalParameters:
+  ?FormalParameters?Yield?Await
+FormalParameters:
+  FormalParameterList?Yield?Await ?{ , ?FunctionRestParameter?Yield?Await }
+  FunctionRestParameter?Yield?Await
+FormalParameterList:
+  FormalParameter?Yield?Await *{ , FormalParameter?Yield?Await }
+FunctionRestParameter:
+  BindingRestElement?Yield?Await
+FormalParameter:
+  BindingElement?Yield?Await
+FunctionBody:
+  FunctionStatementList?Yield?Await
+FunctionStatementList:
+  ?StatementList?Yield?Await+Return
+ArrowFunction:
+  ArrowParameters?Yield?Await ~ => ConciseBody?In
+ArrowParameters:
+  BindingIdentifier?Yield?Await
+  CoverParenthesized?Yield?Await>ArrowFormalParameters?Yield?Await
+ConciseBody:
+  !\{ AssignmentExpression?In
+  \{ FunctionBody \}
+ArrowFormalParameters:
+  \( ?FormalParameters?Yield?Await \)
+AsyncArrowFunction:
+  {
+    `async` ~ AsyncArrowBindingIdentifier?Yield
+    CoverAsyncExpression?Yield?Await>AsyncArrowHead
+  } ~ => AsyncConciseBody?In?Yield
+AsyncConciseBody:
+  !\{ AssignmentExpression?In+Await
+  \{ FunctionBody+Await \}
+AsyncArrowHead:
+  `async` ~ ArrowFormalParameters+Await
+MethodDefinition:
+  PropertyName?Yield?Await \( ?UniqueFormalParameters \) \{ FunctionBody \}
+  GeneratorMethod?Yield?Await
+  AsyncMethod?Yield?Await
+  {
+    `get` PropertyName?Yield?Await \( \)
+    `set` PropertyName?Yield?Await \( PropertySetParameterList \)
+  } \{ FunctionBody \}
+PropertySetParameterList:
+  FormalParameter
+GeneratorMethod:
+  \* PropertyName?Yield?Await \( UniqueFormalParameters+Yield \) \{ GeneratorBody \}
+GeneratorDeclaration:
+  `function` \* BindingIdentifier?Yield?Await \( FormalParameters+Yield \) \{ GeneratorBody \}
+  [?Default] `function` \* \( FormalParameters+Yield \) \{ GeneratorBody \}
+GeneratorExpression:
+  `function` \* ?BindingIdentifier+Yield \( FormalParameters+Yield \) \{ GeneratorBody \}
+GeneratorBody:
+  FunctionBody+Yield
+YieldExpression:
+  `yield` ?{ ~ ?\* AssignmentExpression?In+Yield?Await }
+AsyncMethod:
+  `async` ~ PropertyName?Yield?Await \( UniqueFormalParameters+Await \) \{ AsyncFunctionBody \}
+AsyncFunctionDeclaration:
+  `async` ~ `function` BindingIdentifier?Yield?Await \( FormalParameters?Yield?Await \) \{ AsyncFunctionBody \}
+  [?Default] `async` ~ `function` \( FormalParameters?Yield?Await \) \{ AsyncFunctionBody \}
+AsyncFunctionExpression:
+  `async` ~ `function` ?BindingIdentifier+Await \( FormalParameters+Await \) \{ AsyncFunctionBody \}
+AsyncFunctionBody:
+  FunctionBody+Await
+AwaitExpression:
+  `await` UnaryExpression+Await
+ClassDeclaration:
+  `class` BindingIdentifier?Yield?Await ClassTail?Yield?Await
+ [?Default] `class` ClassTail?Yield?Await
+ClassExpression:
+  `class` ?BindingIdentifier?Yield?Await ClassTail?Yield?Await
+ClassTail:
+  ?ClassHeritage?Yield?Await \{ ?ClassBody?Yield?Await \}
+ClassHeritage:
+  `extends` LeftHandSideExpression?Yield?Await
+ClassBody:
+  ClassElement?Yield?Await
+ClassElementList:
+  *ClassElement?Yield?Await
+ClassElement:
+  ?`static` MethodDefinition?Yield?Await
+  ;
+
+Statement:
+  BlockStatement?Yield?Await?Return
+  VariableStatement?Yield?Await
+  EmptyStatement
+  ExpressionStatement?Yield?Await
+  IfStatement?Yield?Await?Return
+  BreakableStatement?Yield?Await?Return
+  ContinueStatement?Yield?Await
+  BreakStatement?Yield?Await
+  [?Return] ReturnStatement?Yield?Await
+  WithStatement?Yield?Await?Return
+  LabelledStatement?Yield?Await?Return
+  ThrowStatement?Yield?Await
+  TryStatement?Yield?Await?Return
+  DebuggerStatement
+Declaration:
+  HoistableDeclaration?Yield?Await
+  ClassDeclaration?Yield?Await
+  LexicalDeclaration+In?Yield?Await
+HoistableDeclaration:
+  FunctionDeclaration?Yield?Await?Default
+  GeneratorDeclaration?Yield?Await?Default
+  AsyncFunctionDeclaration?Yield?Await?Default
+BreakableStatement:
+  IterationStatement?Yield?Await?Return
+  SwitchStatement?Yield?Await?Return
+BlockStatement:
+  Block?Yield?Await?Return
+Block:
+  \{ StatementList?Yield?Await?Return \}
+StatementList:
+  +StatementListItem?Yield?Await?Return
+StatementListItem:
+  Statement?Yield?Await?Return
+  Declaration?Yield?Await
+LexicalDeclaration:
+  LetOrConst BindingList?In?Yield?Await ;
+LetOrConst:
+  `let`
+  `const`
+BindingList:
+  LexicalBinding?In?Yield?Await *{ , LexicalBinding?In?Yield?Await }
+LexicalBinding:
+  BindingIdentifier?Yield?Await ?Initializer?In?Yield?Await
+  BindingPattern?Yield?Await Initializer?In?Yield?Await
+VariableStatement:
+  `var` VariableDeclarationList+In?Yield?Await ;
+VariableDeclarationList:
+  VariableDeclaration?In?Yield?Await *{ , VariableDeclaration?In?Yield?Await }
+VariableDeclaration:
+  BindingIdentifier?Yield?Await ?Initializer?In?Yield?Await
+  BindingPattern?Yield?Await Initializer?In?Yield?Await
+BindingPattern:
+  ObjectBindingPattern?Yield?Await
+  ArrayBindingPattern?Yield?Await
+ObjectBindingPattern:
+  \{ ?{ BindingPropertyList?Yield?Await ?, } \}
+ArrayBindingPattern:
+  \[ ?{ BindingElementList?Yield?Await ?, } ?Elision ?BindingRestElement?Yield?Await \]
+BindingPropertyList:
+  BindingProperty?Yield?Await *{ , BindingProperty?Yield?Await }
+BindingElementList:
+  BindingElisionElement?Yield?Await *{ , BindingElisionElement?Yield?Await }
+BindingElisionElement:
+  ?Elision BindingElement?Yield?Await
+BindingProperty:
+  SingleNameBinding?Yield?Await
+  PropertyName?Yield?Await \: BindingElement?Yield?Await
+BindingElement:
+  SingleNameBinding?Yield?Await
+  BindingPattern?Yield?Await ?Initializer+In?Yield?Await
+SingleNameBinding:
+  BindingIdentifier?Yield?Await ?Initializer+In?Yield?Await
+BindingRestElement:
+  \.\.\. { BindingIdentifier?Yield?Await | BindingPattern?Yield?Await }
+EmptyStatement:
+  ;
+ExpressionStatement:
+  !{ \{ | `function` | `async` ~ `function` | `class` | `let` \[ } Expression+In?Yield?Await ?; 
+IfStatement:
+  `if` \( Expression+In?Yield?Await \) Statement?Yield?Await?Return ?{ `else` Statement?Yield?Await?Return }
+IterationStatement:
+  `do` Statement?Yield?Await?Return `while` \( Expression+In?Yield?Await \) ; 
+  `while` \( Expression+In?Yield?Await \) Statement?Yield?Await?Return
+  `for` \( {
+    { { !{ `let` \[ } ?Expression?Yield?Await | `var` VariableDeclarationList?Yield?Await } ; | LexicalDeclaration?Yield?Await } ?Expression+In?Yield?Await ; ?Expression+In?Yield?Await
+    { !{ `let` \[ } LeftHandSideExpression?Yield?Await | `var` ForBinding?Yield?Await | ForDeclaration?Yield?Await } `in` Expression+In?Yield?Await
+    { !`let` LeftHandSideExpression?Yield?Await | `var` ForBinding?Yield?Await | ForDeclaration?Yield?Await } `of` AssignmentExpression+In?Yield?Await
+  } \) Statement?Yield?Await?Return
+ForDeclaration:
+  LetOrConst ForBinding?Yield?Await
+ForBinding:
+  BindingIdentifier?Yield?Await
+  BindingPattern?Yield?Await
+ContinueStatement:
+  `continue` ?{ ~ LabelIdentifier?Yield?Await } ; 
+BreakStatement:
+  `break` ?{ ~ LabelIdentifier?Yield?Await } ; 
+ReturnStatement:
+  `return` ?{ ~ ?Expression?Yield?Await } ; 
+WithStatement:
+  `with` \( Expression+In?Yield?Await \) Statement?Yield?Await?Return
+SwitchStatement:
+  `switch` \( Expression+In?Yield?Await \) CaseBlock?Yield?Await?Return
+CaseBlock:
+  \{ ?CaseClauses?Yield?Await?Return ?{ DefaultClause?Yield?Await?Return ?CaseClauses?Yield?Await?Return } \}
+CaseClauses:
+  +CaseClause?Yield?Await?Return
+CaseClause:
+  `case` Expression+In?Yield?Await \: ?StatementList?Yield?Await?Return
+DefaultClause:
+  `default` \: ?StatementList?Yield?Await?Return
+LabelledStatement:
+  LabelIdentifier?Yield?Await \: LabelledItem?Yield?Await?Return
+LabelledItem:
+  Statement?Yield?Await?Return
+  FunctionDeclaration?Yield?Await
+ThrowStatement:
+  `throw` ~ Expression+In?Yield?Await ; 
+TryStatement:
+  `try` Block?Yield?Await?Return {
+     Catch?Yield?Await?Return ?Finally?Yield?Await?Return
+     Finally?Yield?Await?Return
+   }
+Catch:
+  `catch` \( CatchParameter?Yield?Await \) Block?Yield?Await?Return
+Finally:
+  `finally` Block?Yield?Await?Return
+CatchParameter:
+  BindingIdentifier?Yield?Await
+  BindingPattern?Yield?Await
+DebuggerStatement:
+  `debugger` ; 
+
+
+IdentifierReference:
+  Identifier
+  [~Yield] `yield`
+  [~Await] `await`
+BindingIdentifier:
+  Identifier
+  [~Yield] `yield`
+  [~Await] `await`
+AsyncArrowBindingIdentifier:
+  BindingIdentifier+Await
+LabelIdentifier:
+  Identifier
+  [~Yield] `yield`
+  [~Await] `await`
+PrimaryExpression:
+  `this`
+  IdentifierReference?Yield?Await
+  Literal
+  ArrayLiteral?Yield?Await
+  ObjectLiteral?Yield?Await
+  FunctionExpression
+  ClassExpression?Yield?Await
+  GeneratorExpression
+  AsyncFunctionExpression
+  RegularExpressionLiteral
+  TemplateLiteral?Yield?Await
+  CoverParenthesized?Yield?Await>ParenthesizedExpression?Yield?Await
+CoverParenthesized:
+  \( ?{
+    ?{ Expression+In?Yield?Await , } \.\.\. { BindingIdentifier?Yield?Await | BindingPattern?Yield?Await }
+    Expression+In?Yield?Await ?,
+  } \)
+ParenthesizedExpression:
+  \( Expression+In?Yield?Await \)
+Literal:
+  NullLiteral
+  BooleanLiteral
+  NumericLiteral
+  StringLiteral
+ArrayLiteral:
+ \[ { ?Elision | ElementList?Yield?Await ?{ , ?Elision } } \]
+ElementList:
+  ?Elision { AssignmentExpression+In?Yield?Await | SpreadElement?Yield?Await } *{ , ?Elision { AssignmentExpression+In?Yield?Await | SpreadElement?Yield?Await } }
+Elision:
+  +,
+SpreadElement:
+  \.\.\. AssignmentExpression+In?Yield?Await
+ObjectLiteral:
+  \{ ?{ PropertyDefinitionList?Yield?Await ?, } \}
+PropertyDefinitionList:
+  PropertyDefinition?Yield?Await *{ , PropertyDefinition?Yield?Await }
+PropertyDefinition:
+  PropertyName?Yield?Await \: AssignmentExpression+In?Yield?Await
+  CoverInitializedName?Yield?Await
+  MethodDefinition?Yield?Await
+  IdentifierReference?Yield?Await
+PropertyName:
+  LiteralPropertyName
+  ComputedPropertyName?Yield?Await
+LiteralPropertyName:
+  IdentifierName
+  StringLiteral
+  NumericLiteral
+ComputedPropertyName:
+  \[ AssignmentExpression+In?Yield?Await \]
+CoverInitializedName:
+  IdentifierReference?Yield?Await Initializer+In?Yield?Await
+Initializer:
+  = AssignmentExpression?In?Yield?Await
+
+TemplateLiteral:
+  \` ?TemplateSpans?Yield?Await \`
+TemplateSpans:
+  Templet?Yield?Await *TemplateSpans?Yield?Await
+Templet:
+  (?:\\[^]|[^`$]|\$(?!\{))+
+  \$\{ ?Expression+In?Yield?Await \}
+MemberExpression:
+  { 
+    PrimaryExpression?Yield?Await
+    SuperProperty?Yield?Await
+    MetaProperty
+    `new` MemberExpression?Yield?Await Arguments?Yield?Await
+  } ?{
+    \[ Expression+In?Yield?Await \]
+    \. IdentifierName
+    TemplateLiteral?Yield?Await+Tagged
+  }
+SuperProperty:
+  `super` { \. IdentifierName | \[ Expression+In?Yield?Await \] }
+MetaProperty:
+  NewTarget
+NewTarget:
+  `new` \. `target`
+NewExpression:
+  MemberExpression?Yield?Await
+  `new` NewExpression?Yield?Await
+CallExpression:
+  {
+    CoverAsyncExpression?Yield?Await>CallMemberExpression?Yield?Await
+    SuperCall?Yield?Await
+  } *{
+    Arguments?Yield?Await
+    \. IdentifierName
+    \[ Expression+In?Yield?Await \]
+    TemplateLiteral?Yield?Await
+  }
+CoverAsyncExpression:
+  MemberExpression?Yield?Await Arguments?Yield?Await
+CallMemberExpression:
+  MemberExpression?Yield?Await Arguments?Yield?Await
+SuperCall:
+  `super` Arguments?Yield?Await
+Arguments:
+  \( ?{ ArgumentList?Yield?Await ?, } \)
+ArgumentList:
+  {
+    AssignmentExpression+In?Yield?Await
+    \.\.\. AssignmentExpression+In?Yield?Await
+  } *{ , {
+    AssignmentExpression+In?Yield?Await
+    \.\.\. AssignmentExpression+In?Yield?Await
+  } }
+LeftHandSideExpression:
+  CallExpression?Yield?Await
+  NewExpression?Yield?Await
+UpdateExpression:
+  LeftHandSideExpression?Yield?Await ?{ ~ \+\+|-- }
+  \+\+|-- UnaryExpression?Yield?Await
+UnaryExpression:
+  UpdateExpression?Yield?Await
+  { [+-~!] | `typeof` | `delete` | `void` } UnaryExpression?Yield?Await
+  [?Await] AwaitExpression?Yield
+ExponentiationExpression:
+  UnaryExpression?Yield?Await
+  UpdateExpression?Yield?Await \*\* ExponentiationExpression?Yield?Await
+MultiplicativeExpression:
+  ExponentiationExpression?Yield?Await *{ MultiplicativeOperator ExponentiationExpression?Yield?Await }
+MultiplicativeOperator:
+  [*/%]
+AdditiveExpression:
+  MultiplicativeExpression?Yield?Await *{ [+-]  MultiplicativeExpression?Yield?Await }
+ShiftExpression:
+  AdditiveExpression?Yield?Await *{ <<|>>>? AdditiveExpression?Yield?Await }
+RelationalExpression:
+  ShiftExpression?Yield?Await *{ { <=?|>=? | `instanceof` | [?In] `in` } ShiftExpression?Yield?Await }
+EqualityExpression:
+  RelationalExpression?In?Yield?Await *{ \===?|!==? RelationalExpression?In?Yield?Await }
+BitwiseANDExpression:
+  EqualityExpression?In?Yield?Await *{ & EqualityExpression?In?Yield?Await }
+BitwiseXORExpression:
+  BitwiseANDExpression?In?Yield?Await *{ \^ BitwiseANDExpression?In?Yield?Await }
+BitwiseORExpression:
+  BitwiseXORExpression?In?Yield?Await *{ \| BitwiseXORExpression?In?Yield?Await }
+LogicalANDExpression:
+  BitwiseORExpression?In?Yield?Await *{ && BitwiseORExpression?In?Yield?Await }
+LogicalORExpression:
+  LogicalANDExpression?In?Yield?Await *{ \|\| LogicalANDExpression?In?Yield?Await }
+ConditionalExpression:
+  LogicalORExpression?In?Yield?Await ?{ \? AssignmentExpression+In?Yield?Await \: AssignmentExpression?In?Yield?Await }
+AssignmentExpression:
+  LeftHandSideExpression?Yield?Await>AssignmentPattern?Yield?Await = AssignmentExpression?In?Yield?Await
+  LeftHandSideExpression?Yield?Await AssignmentOperator AssignmentExpression?In?Yield?Await
+  [?Yield] YieldExpression?In?Await
+  ConditionalExpression?In?Yield?Await
+  ArrowFunction?In?Yield?Await
+  AsyncArrowFunction?In?Yield?Await
+AssignmentPattern:
+  ObjectAssignmentPattern?Yield?Await
+  ArrayAssignmentPattern?Yield?Await
+ObjectAssignmentPattern:
+  \{ ?{ AssignmentPropertyList?Yield?Await ?, } \}
+ArrayAssignmentPattern:
+  \[ ?Elision ?AssignmentRestElement?Yield?Await \]
+  \[ AssignmentElementList?Yield?Await ?{ , ?Elision ?AssignmentRestElement?Yield?Await } \]
+AssignmentPropertyList:
+  AssignmentProperty?Yield?Await *{ , AssignmentProperty?Yield?Await }
+AssignmentElementList:
+  AssignmentElisionElement?Yield?Await *{ , AssignmentElisionElement?Yield?Await }
+AssignmentElisionElement:
+  ?Elision AssignmentElement?Yield?Await
+AssignmentProperty:
+  IdentifierReference?Yield?Await ?Initializer+In?Yield?Await
+  PropertyName?Yield?Await \: AssignmentElement?Yield?Await
+AssignmentElement:
+  DestructuringAssignmentTarget?Yield?Await ?Initializer+In?Yield?Await
+AssignmentRestElement:
+  \.\.\. DestructuringAssignmentTarget?Yield?Await
+DestructuringAssignmentTarget:
+  LeftHandSideExpression?Yield?Await
+AssignmentOperator:
+  (?:[-+/%&^|]|\*\*?|<<|>>>?)=
+Expression:
+  AssignmentExpression?In?Yield?Await *{ , AssignmentExpression?In?Yield?Await }
+
+IdentifierName: [a-zA-Z_$][\w_$]*
+Identifier: (?!(?:break|do|in|typeof|case|else|instanceof|var|catch|export|new|void|class|extends|return|while|const|finally|super|with|continue|for|switch|yield|debugger|function|this|default|if|throw|delete|import|try|await|enum)\b)[a-zA-Z_$][\w_$]*
+NullLiteral: `null`
+BooleanLiteral: `true` | `false`
+NumericLiteral: 0(?:[bB][01]+|[oO][0-7]+|[xX][0-9A-Fa-f]+)|(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?
+StringLiteral: \'(?:[^'\\\n\r\u2028\u2029]|\\(?:.|[\n\u2028\u2029]|\r\n?))*' | \"(?:[^"\\\n\r\u2028\u2029]|\\(?:.|[\n\u2028\u2029]|\r\n?))*"
+RegularExpressionLiteral: \/(?:[^\/\\[\n\r]|\\.|\[(?:[^\]\\\n\r]|\\.)*\])+\/[gmiy]*
+
+WhiteSpace:
+  \s+
+Comment:
+  MultiLineComment
+  SingleLineComment
+MultiLineComment:
+  \/\*(?:[^*]|\*[^/])*\*\/
+SingleLineComment:
+  \/\/.*
+_:
+  WhiteSpace
+  Comment
+__:
+  [\u0020\t\v\f\u00a0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000\ufeff\ufffe]+ >WhiteSpace
+  SingleLineComment
+  \/\*(?:[^*\n\r\u2028\u2029]|\*[^/])*\*\/ >Comment

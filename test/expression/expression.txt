@@ -1,0 +1,41 @@
+Expression:
+  ConditionalExpression *{ , ConditionalExpression }
+  Identifier
+  Literal
+ConditionalExpression:
+  LogicalORExpression ?{ \? ConditionalExpression \: ConditionalExpression }
+LogicalORExpression:
+  LogicalANDExpression *{ \|\| LogicalANDExpression }
+LogicalANDExpression:
+  BitwiseORExpression *{ && BitwiseORExpression }
+BitwiseORExpression:
+  BitwiseXORExpression *{ \| BitwiseXORExpression }
+BitwiseXORExpression:
+  BitwiseANDExpression *{ \^ BitwiseANDExpression }
+BitwiseANDExpression:
+  EqualityExpression *{ & EqualityExpression }
+EqualityExpression:
+  RelationalExpression *{ \===?|!==? RelationalExpression }
+RelationalExpression:
+  ShiftExpression *{ { <=?|>=? | `instanceof` | [+In] `in` } ShiftExpression }
+ShiftExpression:
+  AdditiveExpression *{ <<|>>>? AdditiveExpression }
+AdditiveExpression:
+  MultiplicativeExpression *{ [+-]  MultiplicativeExpression }
+MultiplicativeExpression:
+  ExponentiationExpression *{ [*/%] ExponentiationExpression }
+ExponentiationExpression:
+  UnaryExpression *{ \*\* UnaryExpression }
+UnaryExpression:
+  +{ [+-~!] | `typeof` | `delete` | `void` } Expression
+Literal:
+  NullLiteral
+  BooleanLiteral
+  NumericLiteral
+  StringLiteral
+NullLiteral: `null`
+BooleanLiteral: `true` | `false`
+NumericLiteral: 0(?:[bB][01]+|[oO][0-7]+|[xX][0-9A-Fa-f]+)|(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?
+StringLiteral: \'(?:[^'\\\n\r\u2028\u2029]|\\(?:.|[\n\u2028\u2029]|\r\n?))*' | \"(?:[^"\\\n\r\u2028\u2029]|\\(?:.|[\n\u2028\u2029]|\r\n?))*"
+Identifier:
+  (?!(?:break|do|in|typeof|case|else|instanceof|var|catch|export|new|void|class|extends|return|while|const|finally|super|with|continue|for|switch|yield|debugger|function|this|default|if|throw|delete|import|try|await|enum)\b)[a-zA-Z_$][\w_$]*
